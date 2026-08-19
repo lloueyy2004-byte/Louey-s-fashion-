@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>louey's Design | تصميم فساتين سهرة فاخرة</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: {
+              300: '#fcf6ba',
+              400: '#fbf5b7',
+              500: '#d4af37',
+              600: '#aa771c',
+            },
+            dark: {
+              700: '#262626',
+              800: '#171717',
+              900: '#0a0a0a',
+              950: '#050505',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Tajawal', sans-serif; background-color: #050505; color: #e5e5e5; }
+    .serif-title { font-family: 'Amiri', serif; }
+    .gold-text-gradient { 
+      background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%); 
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent; 
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #0a0a0a; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #ca8a04; border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-dark-950 text-gray-200 min-h-screen flex flex-col justify-between selection:bg-gold-500 selection:text-dark-950">
+
+  <!-- شريط المالك العلوي -->
+  <div id="adminToolbar" class="hidden sticky top-0 z-50 bg-gradient-to-r from-amber-950 via-amber-900 to-amber-950 text-white text-xs py-2 px-4 shadow-lg border-b border-gold-500/40 flex justify-between items-center">
+    <div class="flex items-center gap-2 font-bold">
+      <i class="fa-solid fa-user-shield text-gold-400"></i>
+      <span>وضع المالك مفعل — يمكنك إضافة وحذف الفساتين فوراً من الصفحات</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="openAdminModal(true)" class="bg-dark-900 hover:bg-black text-gold-400 border border-gold-500/40 px-3 py-1 rounded transition font-medium">
+        <i class="fa-solid fa-sliders ml-1"></i> إعدادات الموقع وتغيير كلمة السر
+      </button>
+      <button onclick="logoutAdmin()" class="bg-red-950 hover:bg-red-900 border border-red-800/50 text-red-300 px-3 py-1 rounded transition">
+        <i class="fa-solid fa-right-from-bracket ml-1"></i> تسجيل الخروج
+      </button>
+    </div>
+  </div>
+
+  <!-- خلفية نمطية ديناميكية -->
+  <div id="dynamicBgOverlay" class="fixed inset-0 z-0 opacity-20 pointer-events-none bg-cover bg-center transition-all duration-700"></div>
+  <div class="fixed inset-0 z-0 opacity-25 pointer-events-none bg-[radial-gradient(#ca8a04_1px,transparent_1px)] [background-size:24px_24px]"></div>
+
+  <!-- الهيدر -->
+  <header class="sticky top-0 z-40 bg-dark-900/90 backdrop-blur-md border-b border-gold-600/20 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        <div class="flex items-center space-x-3 space-x-reverse">
+          <i class="fa-solid fa-crown text-gold-400 text-2xl"></i>
+          <span id="siteBrand" class="serif-title text-2xl md:text-3xl font-bold gold-text-gradient tracking-wide cursor-pointer" onclick="scrollToTop()">louey's Design</span>
+        </div>
+        <nav class="hidden md:flex space-x-8 space-x-reverse text-sm font-medium">
+          <a href="#hero" data-i18n="nav_home" class="text-gray-300 hover:text-gold-400 transition">الرئيسية</a>
+          <a href="#gallery" data-i18n="nav_gallery" class="text-gray-300 hover:text-gold-400 transition">التصاميم والفساتين</a>
+          <a href="#about" data-i18n="nav_about" class="text-gray-300 hover:text-gold-400 transition">عن الدار</a>
+          <a href="#contact" data-i18n="nav_contact" class="text-gray-300 hover:text-gold-400 transition">تواصل معنا</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+          <button onclick="shareWebsiteLink()" class="text-xs bg-dark-800 hover:bg-gold-600/20 text-gold-400 px-3 py-1.5 rounded-full border border-gold-600/30 transition flex items-center gap-1">
+            <i class="fa-solid fa-share-nodes"></i> <span data-i18n="btn_share" class="hidden sm:inline">مشاركة الرابط</span>
+          </button>
+
+          <div class="flex items-center bg-dark-800 border border-dark-700 rounded-full p-1 text-xs">
+            <button onclick="setLanguage('ar')" id="lang-ar" class="px-2.5 py-1 rounded-full text-gold-400 font-bold transition">AR</button>
+            <button onclick="setLanguage('en')" id="lang-en" class="px-2.5 py-1 rounded-full text-gray-400 transition">EN</button>
+            <button onclick="setLanguage('tr')" id="lang-tr" class="px-2.5 py-1 rounded-full text-gray-400 transition">TR</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- القسم الرئيسي (Hero) -->
+  <section id="hero" class="relative z-10 pt-16 pb-16 md:pt-24 md:pb-24 overflow-hidden">
+    <div class="max-w-5xl mx-auto px-4 text-center relative">
+      <div class="inline-block mb-4">
+        <span data-i18n="hero_tag" class="text-gold-400 text-xs md:text-sm tracking-widest uppercase font-semibold border-b border-gold-500/40 pb-1 px-4">دار أزياء فساتين السهرة الفاخرة</span>
+      </div>
+      <h1 id="heroTitle" class="serif-title text-4xl sm:text-6xl md:text-7xl font-bold text-white mb-6 leading-tight drop-shadow-md">louey's Design</h1>
+      <p id="heroSubtitle" class="text-lg sm:text-2xl text-gray-300 font-light max-w-3xl mx-auto leading-relaxed italic border-x border-gold-500/20 px-6 py-2">"تأنّقي كالملكات.. تصميم يلامس روحك ويبرز جمالك الساحر في كل مناسبة."</p>
+
+      <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="#gallery" class="w-full sm:w-auto bg-gradient-to-r from-gold-600 via-gold-500 to-gold-600 text-dark-950 font-bold px-8 py-3.5 rounded-full shadow-lg shadow-gold-600/20 hover:from-gold-500 hover:to-gold-400 transform hover:-translate-y-0.5 transition duration-300 text-sm">
+          <i class="fa-solid fa-gem ml-2"></i> <span data-i18n="btn_explore">استعرضي المجموعة الآن</span>
+        </a>
+        <a id="designerConsultationBtn" href="#" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto bg-green-950/80 hover:bg-green-900 text-green-400 border border-green-600/40 font-bold px-8 py-3.5 rounded-full transition duration-300 text-sm flex items-center justify-center gap-2">
+          <i class="fa-brands fa-whatsapp text-lg"></i> <span data-i18n="btn_consultation">استشارة خاصة وحجز مقاسات عبر الواتساب</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- المعرض والتصاميم -->
+  <main id="gallery" class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
+    <div class="text-center mb-12">
+      <h2 data-i18n="section_gallery_title" class="serif-title text-3xl sm:text-4xl font-bold text-white mb-3">مجموعة الفساتين والقطع الحصرية</h2>
+      <p data-i18n="section_gallery_desc" class="text-xs sm:text-sm text-gray-400 max-w-md mx-auto">اخترنا لك أفضل الخامات والتصاميم العالمية لتنعمي بإطلالة لا تُنسى</p>
+      <div class="w-28 h-0.5 bg-gradient-to-r from-transparent via-gold-500 to-transparent mx-auto mt-4"></div>
+    </div>
+
+    <div id="quickAddDressBtn" class="hidden mb-8 text-center">
+      <button onclick="openAdminModal(true)" class="bg-gold-600/20 hover:bg-gold-600/30 text-gold-400 border border-gold-500/50 font-bold px-6 py-2.5 rounded-full text-xs transition inline-flex items-center gap-2 shadow-lg">
+        <i class="fa-solid fa-plus-circle text-base"></i> إضافة فستان أو تصميم جديد للمجموعة
+      </button>
+    </div>
+
+    <div id="dressesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" aria-live="polite"></div>
+  </main>
+
+  <!-- عن الدار -->
+  <section id="about" class="relative z-10 bg-dark-900/80 border-y border-dark-800 py-16">
+    <div class="max-w-5xl mx-auto px-4 text-center space-y-6">
+      <h3 data-i18n="about_title" class="serif-title text-3xl font-bold gold-text-gradient">عن دار louey's Design</h3>
+      <p data-i18n="about_desc" class="text-gray-300 text-sm md:text-base leading-relaxed max-w-3xl mx-auto">
+        نحن في دار <strong>louey's Design</strong> نؤمن بأن كل امرأة هي قطعة فنية مميزة تستحق تصميماً يُبرز فخامتها وأنوثتها. نبتكر أزياء السهرة بحرفية عالية ودقة متناهية بالاعتماد على أفضل أنواع الأقمشة العالمية والتطريز اليدوي الفاخر.
+      </p>
+    </div>
+  </section>
+
+  <!-- التذييل -->
+  <footer id="contact" class="relative z-10 bg-dark-900 border-t border-dark-800 text-gray-400 py-12">
+    <div class="max-w-7xl mx-auto px-4 text-center space-y-6">
+      <div class="flex items-center justify-center space-x-2 space-x-reverse cursor-pointer select-none" onclick="handleSecretClick()" role="button" aria-label="لوحة إدارة الدار">
+        <i class="fa-solid fa-crown text-gold-400"></i>
+        <span id="secretTriggerBrand" class="serif-title text-2xl font-bold gold-text-gradient hover:opacity-90">louey's Design</span>
+      </div>
+      <p class="text-xs text-gray-500"><span data-i18n="footer_rights">جميع الحقوق محفوظة &copy;</span> <span id="year"></span> | louey's Design</p>
+
+      <div class="flex justify-center space-x-6 space-x-reverse text-gold-400 pt-2">
+        <a id="socialInstagram" href="#" target="_blank" rel="noopener noreferrer" class="hover:text-gold-300 transition text-2xl" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a id="socialFacebook" href="#" target="_blank" rel="noopener noreferrer" class="hover:text-gold-300 transition text-2xl" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+        <a id="socialWhatsapp" href="#" target="_blank" rel="noopener noreferrer" class="hover:text-gold-300 transition text-2xl" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- نافذة الدفع بالـ IBAN -->
+  <div id="paymentModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="bg-dark-900 border border-gold-600/40 rounded-2xl p-6 sm:p-8 max-w-lg w-full relative shadow-2xl">
+      <button onclick="closePaymentModal()" class="absolute top-4 left-4 text-gray-400 hover:text-white text-xl" aria-label="اغلاق"><i class="fa-solid fa-xmark"></i></button>
+
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 bg-gold-600/10 text-gold-400 rounded-full flex items-center justify-center mx-auto text-xl border border-gold-500/30 mb-3">
+          <i class="fa-solid fa-building-columns"></i>
+        </div>
+        <h3 data-i18n="modal_payment_title" class="serif-title text-2xl font-bold text-white">إتمام طلب الفستان</h3>
+        <p id="modalDressTitle" class="text-gold-400 text-sm font-semibold mt-1"></p>
+        <div class="mt-2 inline-block bg-dark-800 px-4 py-1 rounded-full border border-gold-500/30">
+          <span data-i18n="price_label" class="text-xs text-gray-400">السعر:</span>
+          <span id="modalDressPrice" class="text-gold-400 font-bold ml-1"></span> <span class="text-xs text-gold-400">USD $</span>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-dark-950 p-4 rounded-xl border border-gold-600/30 space-y-3">
+          <p data-i18n="iban_msg" class="text-xs text-gray-400">يرجى تحويل المبلغ بالدولار الأمريكي (USD) إلى حساب الآيبان الخاص بالدار:</p>
+          
+          <div class="flex items-center justify-between bg-dark-900 p-3 rounded-lg border border-dark-700">
+            <span id="displayIban" class="font-mono text-xs sm:text-sm text-gold-400 font-bold tracking-wider"></span>
+            <button onclick="copyIban()" class="text-xs bg-gold-600/20 text-gold-400 hover:bg-gold-600/40 px-3 py-1.5 rounded transition flex items-center gap-1">
+              <i class="fa-regular fa-copy"></i> <span data-i18n="btn_copy">نسخ</span>
+            </button>
+          </div>
+
+          <div class="flex justify-between items-center text-xs pt-1 border-t border-dark-800">
+            <span data-i18n="required_amount" class="text-gray-400">المبلغ المطلوب للتحويل:</span>
+            <span class="text-gold-400 font-bold"><span id="ibanDressPrice"></span> USD $</span>
+          </div>
+        </div>
+
+        <a id="whatsappIbanBtn" href="#" target="_blank" rel="noopener noreferrer" class="block w-full text-center bg-green-600 hover:bg-green-500 text-white font-bold py-3.5 rounded-xl transition text-sm shadow-md">
+          <i class="fa-brands fa-whatsapp text-lg ml-1"></i> <span data-i18n="btn_confirm_wa">تأكيد الطلب وإرسال التحويل عبر الواتساب</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- لوحة تحكم المالك السريّة -->
+  <div id="adminModal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="bg-dark-900 border border-gold-500/50 rounded-2xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar relative shadow-2xl">
+      <button onclick="closeAdminModal()" class="absolute top-4 left-4 text-gray-400 hover:text-white text-xl" aria-label="اغلاق"><i class="fa-solid fa-xmark"></i></button>
+
+      <!-- تسجيل الدخول -->
+      <div id="adminLoginView" class="py-10 text-center space-y-4">
+        <div class="w-16 h-16 bg-gold-600/10 text-gold-400 rounded-full flex items-center justify-center mx-auto text-2xl border border-gold-500/30"><i class="fa-solid fa-user-shield"></i></div>
+        <h3 class="serif-title text-2xl font-bold text-white">تسجيل دخول المالك</h3>
+        <p class="text-xs text-gray-400">أدخل كلمة السر الخاصة للوصول إلى لوحة تحكم المتجر.</p>
+
+        <form id="adminLoginForm" class="max-w-xs mx-auto space-y-3 pt-2" onsubmit="handleAdminLogin(event)">
+          <input id="adminPassInput" type="password" placeholder="كلمة السر" required class="w-full bg-dark-950 border border-dark-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-gold-500 text-sm text-center">
+          <button type="submit" class="w-full bg-gold-500 text-dark-950 font-bold py-2.5 rounded-lg hover:bg-gold-400 transition text-sm">تسجيل الدخول</button>
+          <p id="adminErrorMsg" class="text-xs text-red-500 hidden font-bold">كلمة السر غير صحيحة!</p>
+        </form>
+      </div>
+
+      <!-- واجهة الداشبورد -->
+      <div id="adminDashboardView" class="hidden space-y-6">
+        <div class="flex justify-between items-center border-b border-dark-700 pb-4">
+          <div>
+            <h3 class="serif-title text-xl font-bold text-gold-400">لوحة تحكم المالك - louey's Design</h3>
+            <p class="text-xs text-gray-400">تحكم بالمنتجات، الإعدادات العامة وكلمة السر.</p>
+          </div>
+          <button onclick="logoutAdmin()" class="text-xs bg-red-950/80 border border-red-800/40 text-red-400 hover:bg-red-900 px-3 py-1.5 rounded transition">تسجيل الخروج</button>
+        </div>
+
+        <!-- إضافة فستان جديد -->
+        <div class="bg-dark-950 p-4 rounded-xl border border-dark-800 space-y-4">
+          <p class="text-xs font-bold text-gold-400 flex items-center gap-1"><i class="fa-solid fa-plus-circle"></i> إضافة فستان جديد للمعرض:</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input id="newDressName" type="text" placeholder="اسم الفستان" class="bg-dark-900 border border-dark-700 rounded px-3 py-2 text-xs text-white">
+            <input id="newDressPrice" type="number" placeholder="السعر بالدولار ($)" class="bg-dark-900 border border-dark-700 rounded px-3 py-2 text-xs text-white">
+          </div>
+          <textarea id="newDressDesc" placeholder="وصف قصير للفستان والقماش..." class="w-full bg-dark-900 border border-dark-700 rounded px-3 py-2 text-xs text-white h-16"></textarea>
+          
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">صورة الفستان:</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <label class="cursor-pointer bg-dark-800 hover:bg-dark-700 text-gold-400 border border-gold-600/30 text-xs px-3 py-2 rounded font-bold flex items-center justify-center gap-2">
+                <i class="fa-solid fa-upload"></i> رفع صورة من جهازك
+                <input type="file" id="newDressFileInput" accept="image/*" class="hidden" onchange="handleDressFileSelect(event)">
+              </label>
+              <input id="newDressImage" type="text" placeholder="أو أدخل رابط صورة (URL)" class="bg-dark-900 border border-dark-700 rounded px-3 py-2 text-xs text-white">
+            </div>
+            <p id="selectedFileName" class="text-[10px] text-green-400 mt-1"></p>
+          </div>
+
+          <button onclick="addNewDress()" class="w-full bg-gold-600 hover:bg-gold-500 text-dark-950 text-xs font-bold py-2.5 rounded transition shadow">
+            <i class="fa-solid fa-check ml-1"></i> إضافة الفستان فوراً
+          </button>
+        </div>
+
+        <!-- تغيير كلمة السر -->
+        <div class="bg-dark-950 p-4 rounded-xl border border-dark-800 space-y-3">
+          <p class="text-xs font-bold text-gold-400 flex items-center gap-1"><i class="fa-solid fa-key"></i> تغيير كلمة سر المالك:</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input id="oldPasswordInput" type="password" placeholder="كلمة السر الحالية" class="bg-dark-900 border border-dark-700 rounded px-3 py-2 text-xs text-white">
+            <input id="newPasswordInput" type="password" placeholder="كلمة السر الجديدة" class="bg-dark-900 border border-dark-700 rounded px-3 py-2 text-xs text-white">
+          </div>
+          <button onclick="changeAdminPassword()" class="bg-gold-600 hover:bg-gold-500 text-dark-950 text-xs font-bold px-4 py-2 rounded transition shadow">
+            تحديث كلمة السر
+          </button>
+        </div>
+
+        <!-- إعدادات الموقع العامة -->
+        <div class="bg-dark-950 p-4 rounded-xl border border-dark-800 space-y-4">
+          <p class="text-xs font-bold text-gold-400 flex items-center gap-1"><i class="fa-solid fa-gear"></i> الإعدادات العامة والحسابات:</p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div><label class="block text-xs text-gray-400 mb-1">اسم الموقع/الدار</label><input id="settingSiteTitle" type="text" class="w-full bg-dark-900 border border-dark-700 rounded px-3 py-2 text-xs text-white"></div>
+            <div><label class="block text-xs text-gray-400 mb-1">رقم IBAN للتحويلات</label><input id="settingIban" type="text" class="w-full bg-dark-900 border border-dark-700 rounded px-3 py-2 text-xs text-white"></div>
+          </div>
+          <div><label class="block text-xs text-gray-400 mb-1">عبارة الترحيب في الرئيسية</label><input id="settingSubtitle" type="text" class="w-full bg-dark-900 border border-dark-700 rounded px-3 py-2 text-xs text-white"></div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div><label class="block text-xs text-gray-400 mb-1"><i class="fab fa-whatsapp text-green-500"></i> رقم الواتساب</label><input id="settingWhatsapp" type="text" class="w-full bg-dark-900 border border-dark-700 rounded px-3 py-2 text-xs text-white"></div>
+            <div><label class="block text-xs text-gray-400 mb-1"><i class="fab fa-instagram text-pink-500"></i> رابط انستغرام</label><input id="settingInstagram" type="text" class="w-full bg-dark-900 border border-dark-700 rounded px-3 py-2 text-xs text-white"></div>
+            <div><label class="block text-xs text-gray-400 mb-1"><i class="fab fa-facebook text-blue-500"></i> رابط فيسبوك</label><input id="settingFacebook" type="text" class="w-full bg-dark-900 border border-dark-700 rounded px-3 py-2 text-xs text-white"></div>
+          </div>
+
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">صورة خلفية الموقع:</label>
+            <div class="flex gap-2">
+              <input id="settingBgUrl" type="text" class="w-full bg-dark-900 border border-dark-700 rounded px-3 py-2 text-xs text-white" placeholder="https://...">
+              <label class="cursor-pointer bg-dark-800 hover:bg-dark-700 text-gold-400 border border-gold-600/30 text-xs px-3 py-2 rounded font-bold whitespace-nowrap">
+                رفع خلفية <input type="file" accept="image/*" class="hidden" onchange="handleBgFileUpload(event)">
+              </label>
+            </div>
+          </div>
+
+          <button onclick="saveGeneralSettings()" class="bg-gold-600 hover:bg-gold-500 text-dark-950 text-xs font-bold px-5 py-2 rounded transition shadow">حفظ التغييرات</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // جلب الإعدادات المخزنة محلياً أو وضع الافتراضية
+    let savedPass = localStorage.getItem('louey_admin_pass') || 'admin1234';
+    let appData = JSON.parse(localStorage.getItem('louey_app_data')) || {
+      siteTitle: "louey's Design",
+      subtitle: "تأنّقي كالملكات.. تصميم يلامس روحك ويبرز جمالك الساحر في كل مناسبة.",
+      iban: "SA8220000000123456789012",
+      whatsapp: "905000000000",
+      instagram: "https://instagram.com",
+      facebook: "https://facebook.com",
+      bgUrl: "",
+      dresses: [
+        {
+          id: 1,
+          title: "فستان السهرة الملكي الذهبي",
+          price: 450,
+          image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=800&q=80",
+          description: "تصميم حريري فاخر بتطريز يدوي عالي الدقة يمنحك إطلالة ملوكية."
+        },
+        {
+          id: 2,
+          title: "فستان المخمل الأسود الأنيق",
+          price: 380,
+          image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=800&q=80",
+          description: "إطلالة ساحرة من المخمل الأسود الفاخر مع لمسات أنثوية رقيقة."
+        },
+        {
+          id: 3,
+          title: "فستان الزمرد الساتان الانسيابي",
+          price: 520,
+          image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=800&q=80",
+          description: "تصميم انسيابي جذّاب باللون الزمردي الراقي ليضمن لك حضوراً استثنائياً."
+        }
+      ]
+    };
+
+    let selectedDress = null;
+    let adminLoggedIn = false;
+    let tempDressImageBase64 = "";
+
+    const i18nData = {
+      ar: {
+        nav_home: "الرئيسية", nav_gallery: "التصاميم والفساتين", nav_about: "عن الدار", nav_contact: "تواصل معنا",
+        btn_share: "مشاركة الرابط", hero_tag: "دار أزياء فساتين السهرة الفاخرة", btn_explore: "استعرضي المجموعة الآن",
+        btn_consultation: "استشارة خاصة وحجز مقاسات عبر الواتساب", section_gallery_title: "مجموعة الفساتين والقطع الحصرية",
+        section_gallery_desc: "اخترنا لك أفضل الخامات والتصاميم العالمية لتنعمي بإطلالة لا تُنسى",
+        about_title: "عن دار louey's Design", about_desc: "نحن في دار louey's Design نؤمن بأن كل امرأة هي قطعة فنية مميزة تستحق تصميماً يُبرز فخامتها وأنوثتها.",
+        footer_rights: "جميع الحقوق محفوظة ©", modal_payment_title: "إتمام طلب الفستان", price_label: "السعر:",
+        iban_msg: "يرجى تحويل المبلغ بالدولار الأمريكي (USD) إلى حساب الآيبان الخاص بالدار:",
+        btn_copy: "نسخ", required_amount: "المبلغ المطلوب للتحويل:", btn_confirm_wa: "تأكيد الطلب وإرسال التحويل عبر الواتساب"
+      },
+      en: {
+        nav_home: "Home", nav_gallery: "Designs & Dresses", nav_about: "About Us", nav_contact: "Contact Us",
+        btn_share: "Share Link", hero_tag: "LUXURY EVENING DRESSES HOUSE", btn_explore: "Explore Collection Now",
+        btn_consultation: "Private Consultation via WhatsApp", section_gallery_title: "Exclusive Evening Dresses Collection",
+        section_gallery_desc: "Handpicked premium fabrics and exquisite haute couture designs",
+        about_title: "About louey's Design", about_desc: "At louey's Design, we believe every woman deserves a masterpiece tailored to highlight her elegance.",
+        footer_rights: "All rights reserved ©", modal_payment_title: "Complete Dress Order", price_label: "Price:",
+        iban_msg: "Please transfer the amount in USD to the following IBAN:",
+        btn_copy: "Copy", required_amount: "Required Transfer Amount:", btn_confirm_wa: "Confirm Order via WhatsApp"
+      },
+      tr: {
+        nav_home: "Ana Sayfa", nav_gallery: "Tasarımlar & Elbiseler", nav_about: "Hakkımızda", nav_contact: "İletişim",
+        btn_share: "Bağlantıyı Paylaş", hero_tag: "LÜKS GECE ELBİSELERİ EVİ", btn_explore: "Koleksiyonu Keşfet",
+        btn_consultation: "WhatsApp Üzerinden Özel Danışmanlık", section_gallery_title: "Özel Gece Elbisesi Koleksiyonu",
+        section_gallery_desc: "Unutulmaz bir görünüm için seçilmiş en kaliteli kumaşlar ve tasarımlar",
+        about_title: "louey's Design Hakkında", about_desc: "louey's Design olarak her kadının zarafetini ortaya çıkaracak özel bir tasarımı hak ettiğine inanıyoruz.",
+        footer_rights: "Tüm hakları saklıdır ©", modal_payment_title: "Siparişi Tamamla", price_label: "Fiyat:",
+        iban_msg: "Lütfen tutarı USD cinsinden aşağıdaki IBAN adresine gönderin:",
+        btn_copy: "Kopyala", required_amount: "Gerekli Transfer Tutarı:", btn_confirm_wa: "WhatsApp ile Siparişi Onayla"
+      }
+    };
+
+    function setLanguage(lang) {
+      const data = i18nData[lang] || i18nData.ar;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (data[key]) el.textContent = data[key];
+      });
+      document.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.lang = lang;
+      ['ar','en','tr'].forEach(l => {
+        const b = document.getElementById(`lang-${l}`);
+        if(b) b.className = l === lang ? "px-2.5 py-1 rounded-full text-gold-400 font-bold transition" : "px-2.5 py-1 rounded-full text-gray-400 transition";
+      });
+    }
+
+    function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+    function safeCreateDressCard(dress) {
+      const card = document.createElement('div');
+      card.className = "bg-dark-900 rounded-2xl overflow-hidden border border-dark-800 hover:border-gold-600/40 transition-all duration-300 flex flex-col justify-between group shadow-xl hover:-translate-y-1 relative";
+      
+      const imgWrap = document.createElement('div');
+      imgWrap.className = "relative overflow-hidden h-96 bg-dark-950";
+      
+      const img = document.createElement('img');
+      img.src = dress.image || 'https://via.placeholder.com/800x1000?text=loueys+Design';
+      img.alt = dress.title || "فستان سهرة";
+      img.loading = 'lazy';
+      img.className = "w-full h-full object-cover object-top group-hover:scale-105 transition duration-700";
+      img.onerror = function() { this.src = 'https://via.placeholder.com/800x1000?text=loueys+Design'; };
+      
+      const overlay = document.createElement('div');
+      overlay.className = "absolute inset-0 bg-gradient-to-t from-dark-950 via-transparent to-transparent opacity-90";
+      
+      const priceBadge = document.createElement('span');
+      priceBadge.className = "absolute top-4 left-4 bg-dark-950/80 backdrop-blur-md text-gold-400 font-bold px-3 py-1.5 rounded-full text-xs border border-gold-500/30 tracking-wider";
+      priceBadge.textContent = `$${dress.price} USD`;
+
+      if (adminLoggedIn) {
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = "absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white font-bold p-2.5 rounded-full shadow-2xl transition flex items-center justify-center z-30 text-xs border border-red-400/50";
+        deleteBtn.title = "حذف الفستان نهائياً";
+        deleteBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          deleteDress(dress.id);
+        };
+        imgWrap.appendChild(deleteBtn);
+      }
+
+      imgWrap.appendChild(img);
+      imgWrap.appendChild(overlay);
+      imgWrap.appendChild(priceBadge);
+
+      const content = document.createElement('div');
+      content.className = "p-6 space-y-3 flex-grow flex flex-col justify-between";
+
+      const title = document.createElement('h3');
+      title.className = "serif-title text-xl font-bold text-white mb-2";
+      title.textContent = dress.title || '';
+
+      const desc = document.createElement('p');
+      desc.className = "text-gray-400 text-xs leading-relaxed";
+      desc.textContent = dress.description || '';
+
+      const btn = document.createElement('button');
+      btn.className = "w-full mt-4 bg-dark-800 hover:bg-gold-500 text-gold-400 hover:text-dark-950 border border-gold-600/40 font-bold py-3 rounded-xl transition duration-300 text-xs sm:text-sm flex items-center justify-center gap-2 shadow";
+      btn.innerHTML = '<i class="fa-solid fa-bag-shopping"></i> طلب الفستان عبر IBAN والواتساب';
+      btn.addEventListener('click', () => openPaymentModal(dress.id));
+
+      content.appendChild(title);
+      content.appendChild(desc);
+      content.appendChild(btn);
+
+      card.appendChild(imgWrap);
+      card.appendChild(content);
+      return card;
+    }
+
+    function saveToStorage() {
+      localStorage.setItem('louey_app_data', JSON.stringify(appData));
+    }
+
+    function renderData() {
+      document.getElementById('siteBrand').textContent = appData.siteTitle || "louey's Design";
+      document.getElementById('heroTitle').textContent = appData.siteTitle || "louey's Design";
+      document.getElementById('heroSubtitle').textContent = appData.subtitle ? `"${appData.subtitle}"` : '';
+      document.getElementById('displayIban').textContent = appData.iban || '';
+
+      if (appData.bgUrl) {
+        document.getElementById('dynamicBgOverlay').style.backgroundImage = `url('${appData.bgUrl}')`;
+      } else {
+        document.getElementById('dynamicBgOverlay').style.backgroundImage = 'none';
+      }
+
+      const cleanWa = (appData.whatsapp || '').replace(/[^0-9]/g, '');
+      const waConsultationMsg = encodeURIComponent(`مرحباً دار louey's Design، أود حجز استشارة خاصة وتحديد المقاسات.`);
+      document.getElementById('designerConsultationBtn').href = `https://wa.me/${cleanWa}?text=${waConsultationMsg}`;
+      document.getElementById('socialWhatsapp').href = `https://wa.me/${cleanWa}`;
+      document.getElementById('socialInstagram').href = appData.instagram || '#';
+      document.getElementById('socialFacebook').href = appData.facebook || '#';
+
+      const toolbar = document.getElementById('adminToolbar');
+      const quickAdd = document.getElementById('quickAddDressBtn');
+      if (adminLoggedIn) {
+        toolbar.classList.remove('hidden');
+        quickAdd.classList.remove('hidden');
+      } else {
+        toolbar.classList.add('hidden');
+        quickAdd.classList.add('hidden');
+      }
+
+      const grid = document.getElementById('dressesGrid');
+      grid.innerHTML = '';
+      (appData.dresses || []).forEach(d => grid.appendChild(safeCreateDressCard(d)));
+
+      document.getElementById('settingSiteTitle').value = appData.siteTitle || '';
+      document.getElementById('settingSubtitle').value = appData.subtitle || '';
+      document.getElementById('settingIban').value = appData.iban || '';
+      document.getElementById('settingWhatsapp').value = appData.whatsapp || '';
+      document.getElementById('settingInstagram').value = appData.instagram || '';
+      document.getElementById('settingFacebook').value = appData.facebook || '';
+      document.getElementById('settingBgUrl').value = appData.bgUrl || '';
+    }
+
+    function openPaymentModal(dressId) {
+      selectedDress = (appData.dresses || []).find(x => x.id === dressId);
+      if (!selectedDress) return;
+      document.getElementById('modalDressTitle').textContent = selectedDress.title;
+      document.getElementById('modalDressPrice').textContent = selectedDress.price;
+      document.getElementById('ibanDressPrice').textContent = selectedDress.price;
+
+      const cleanWa = (appData.whatsapp || '').replace(/[^0-9]/g, '');
+      const waMsg = encodeURIComponent(`مرحباً دار louey's Design، أرغب في طلب الفستان (${selectedDress.title}) وقيمته $${selectedDress.price} USD بعد إتمام التحويل.`);
+      document.getElementById('whatsappIbanBtn').href = `https://wa.me/${cleanWa}?text=${waMsg}`;
+
+      document.getElementById('paymentModal').classList.remove('hidden');
+    }
+
+    function closePaymentModal() { document.getElementById('paymentModal').classList.add('hidden'); }
+
+    function copyIban() {
+      const text = appData.iban || '';
+      if (!text) return;
+      navigator.clipboard?.writeText(text);
+      alert('تم نسخ رقم IBAN: ' + text);
+    }
+
+    function shareWebsiteLink() {
+      if (navigator.share) {
+        navigator.share({ title: appData.siteTitle, url: window.location.href });
+      } else {
+        navigator.clipboard?.writeText(window.location.href);
+        alert('تم نسخ رابط الموقع بنجاح!');
+      }
+    }
+
+    function handleSecretClick() {
+      window._secretClicks = (window._secretClicks || 0) + 1;
+      if (window._secretClicks >= 5) {
+        window._secretClicks = 0;
+        openAdminModal(false);
+      }
+    }
+
+    function openAdminModal(forceDashboard = false) {
+      const modal = document.getElementById('adminModal');
+      const loginView = document.getElementById('adminLoginView');
+      const dashView = document.getElementById('adminDashboardView');
+
+      modal.classList.remove('hidden');
+
+      if (adminLoggedIn || forceDashboard) {
+        loginView.classList.add('hidden');
+        dashView.classList.remove('hidden');
+      } else {
+        loginView.classList.remove('hidden');
+        dashView.classList.add('hidden');
+      }
+    }
+
+    function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
+
+    function handleAdminLogin(evt) {
+      evt.preventDefault();
+      const pass = document.getElementById('adminPassInput').value.trim();
+      if (!pass) return;
+
+      if (pass === savedPass) {
+        adminLoggedIn = true;
+        document.getElementById('adminPassInput').value = '';
+        document.getElementById('adminErrorMsg').classList.add('hidden');
+        closeAdminModal();
+        renderData();
+      } else {
+        document.getElementById('adminErrorMsg').classList.remove('hidden');
+      }
+    }
+
+    function logoutAdmin() {
+      adminLoggedIn = false;
+      renderData();
+    }
+
+    function deleteDress(id) {
+      if (!confirm('هل أنت متأكد من حذف هذا الفستان نهائياً؟')) return;
+      appData.dresses = appData.dresses.filter(d => d.id !== id);
+      saveToStorage();
+      renderData();
+    }
+
+    function handleDressFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) return alert('الرجاء اختيار صورة أقل من 2 ميجابايت.');
+      document.getElementById('selectedFileName').textContent = file.name;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        tempDressImageBase64 = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function addNewDress() {
+      const name = document.getElementById('newDressName').value.trim();
+      const price = parseFloat(document.getElementById('newDressPrice').value);
+      const desc = document.getElementById('newDressDesc').value.trim();
+      const imageUrlInput = document.getElementById('newDressImage').value.trim();
+
+      if (!name || isNaN(price)) return alert('يرجى كِتابة اسم وسعر صحيح للفستان.');
+
+      const finalImg = tempDressImageBase64 || imageUrlInput || 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=800&q=80';
+
+      const newDress = {
+        id: Date.now(),
+        title: name,
+        price: price,
+        image: finalImg,
+        description: desc || 'تصميم فاخر من مجموعات الدار'
+      };
+
+      appData.dresses.unshift(newDress);
+      saveToStorage();
+
+      document.getElementById('newDressName').value = '';
+      document.getElementById('newDressPrice').value = '';
+      document.getElementById('newDressDesc').value = '';
+      document.getElementById('newDressImage').value = '';
+      document.getElementById('selectedFileName').textContent = '';
+      tempDressImageBase64 = "";
+
+      renderData();
+      closeAdminModal();
+      alert('تمت إضافة الفستان بنجاح!');
+    }
+
+    function changeAdminPassword() {
+      const oldPassword = document.getElementById('oldPasswordInput').value.trim();
+      const newPassword = document.getElementById('newPasswordInput').value.trim();
+
+      if (!oldPassword || !newPassword) return alert('يرجى ملء حقول كلمة السر.');
+
+      if (oldPassword === savedPass) {
+        savedPass = newPassword;
+        localStorage.setItem('louey_admin_pass', newPassword);
+        alert('تم تحديث كلمة السر بنجاح!');
+        document.getElementById('oldPasswordInput').value = '';
+        document.getElementById('newPasswordInput').value = '';
+      } else {
+        alert('كلمة السر الحالية غير صحيحة.');
+      }
+    }
+
+    function saveGeneralSettings() {
+      appData.siteTitle = document.getElementById('settingSiteTitle').value.trim();
+      appData.subtitle = document.getElementById('settingSubtitle').value.trim();
+      appData.iban = document.getElementById('settingIban').value.trim();
+      appData.whatsapp = document.getElementById('settingWhatsapp').value.trim();
+      appData.instagram = document.getElementById('settingInstagram').value.trim();
+      appData.facebook = document.getElementById('settingFacebook').value.trim();
+      appData.bgUrl = document.getElementById('settingBgUrl').value.trim();
+
+      saveToStorage();
+      renderData();
+      closeAdminModal();
+      alert('تم حفظ كافة الإعدادات بنجاح!');
+    }
+
+    function handleBgFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) return alert('اختر صورة أصغر من 2 ميجابايت.');
+      const r = new FileReader();
+      r.onload = e => { document.getElementById('settingBgUrl').value = e.target.result; };
+      r.readAsDataURL(file);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('year').textContent = new Date().getFullYear();
+      renderData();
+    });
+  </script>
+</body>
+</html>
+
