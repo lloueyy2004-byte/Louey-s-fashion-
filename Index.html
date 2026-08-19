@@ -1,0 +1,234 @@
+# build_release.ps1
+# سكربت بناء حزمة المشروع كلمة السر المثبتة: admin1234
+# للتشغيل: 
+#   Set-ExecutionPolicy Bypass -Scope Process -Force
+#   .\build_release.ps1
+
+Param()
+$ErrorActionPreference = "Stop"
+
+$ROOT_DIR = "loueys-design-release"
+$ZIP_NAME = "loueys-design-release.zip"
+
+if (Test-Path $ROOT_DIR) { Remove-Item -Recurse -Force $ROOT_DIR }
+if (Test-Path $ZIP_NAME) { Remove-Item -Force $ZIP_NAME }
+
+New-Item -ItemType Directory -Force -Path "$ROOT_DIR\server" | Out-Null
+New-Item -ItemType Directory -Force -Path "$ROOT_DIR\data" | Out-Null
+New-Item -ItemType Directory -Force -Path "$ROOT_DIR\uploads" | Out-Null
+
+function Write-File([string]$path, [string]$content) {
+    $dir = Split-Path $path -Parent
+    if (!(Test-Path $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
+    $content | Out-File -FilePath $path -Encoding UTF8 -Force
+}
+
+# 1) server/index.js
+Write-File "$ROOT_DIR\server\index.js" @'
+require('dotenv').config();
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const session = require('express-session');
+const bodyParser = require('body-parser');
+const multer = require('multer');
+const helmet = require('helmet');
+
+const app = express();
+
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(bodyParser.json({ limit: '5mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
+
+app.use(express.static(path.join(__dirname, '..')));
+
+app.use(session({
+  name: 'loueys.sid',
+  secret: process.env.SESSION_SECRET || 'super_secret_session_key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000
+  }
+}));
+
+const DATA_DIR = path.join(__dirname, '..', 'data');
+const CONFIG_PATH = path.join(DATA_DIR, 'config.json');
+const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
+
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR);
+
+// إنشاء الملف وتعيين admin1234 ككلمة سر افتراضية
+if (!fs.existsSync(CONFIG_PATH)) {
+  const defaultConfig = {
+    siteTitle: "louey's Design",
+    subtitle: "تأنّقي كالملكات.. تصميم يلامس روحك",
+    iban: "SA8220000000123456789012",
+    whatsapp: "905000000000",
+    instagram: "https://instagram.com",
+    facebook: "https://facebook.com",
+    adminPass: "admin1234",
+    bgUrl: "",
+    dresses: [
+      {
+        id: 1,
+        title: "فستان السهرة الملكي الذهبي",
+        price: 450,
+        image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=800&q=80",
+        description: "تصميم حريري فاخر بتطريز يدوي عالي الدقة يمنحك إطلالة ملوكية."
+      },
+      {
+        id: 2,
+        title: "فستان المخمل الأسود الأنيق",
+        price: 380,
+        image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=800&q=80",
+        description: "إطلالة ساحرة من المخمل الأسود الفاخر مع لمسات أنثوية رقيقة."
+      }
+    ]
+  };
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify(defaultConfig, null, 2));
+}
+
+function readConfig() { return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')); }
+function writeConfig(cfg) { fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2)); }
+
+const upload = multer({
+  dest: UPLOADS_DIR,
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
+
+function requireAuth(req, res, next) {
+  if (req.session && req.session.isAdmin) return next();
+  res.status(401).json({ error: 'غير مصرح للوصول' });
+}
+
+// تسجيل الدخول بالتحقق من admin1234
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body;
+  const cfg = readConfig();
+  const currentPass = cfg.adminPass || 'admin1234';
+
+  if (password === currentPass) {
+    req.session.isAdmin = true;
+    return res.json({ ok: true });
+  }
+  return res.status(403).json({ error: 'كلمة السر غير صحيحة' });
+});
+
+// تغيير كلمة السر
+app.post('/api/admin/change-password', requireAuth, (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  const cfg = readConfig();
+  const currentPass = cfg.adminPass || 'admin1234';
+
+  if (oldPassword !== currentPass) {
+    return res.status(400).json({ error: 'كلمة السر الحالية غير صحيحة' });
+  }
+
+  cfg.adminPass = newPassword;
+  writeConfig(cfg);
+  res.json({ ok: true });
+});
+
+app.post('/api/admin/logout', requireAuth, (req, res) => {
+  req.session.destroy(() => res.json({ ok: true }));
+});
+
+app.get('/api/config', (req, res) => {
+  const cfg = readConfig();
+  const safeConfig = { ...cfg };
+  delete safeConfig.adminPass;
+  res.json(safeConfig);
+});
+
+app.post('/api/admin/config', requireAuth, (req, res) => {
+  const cfg = readConfig();
+  const currentPass = cfg.adminPass;
+  Object.assign(cfg, req.body);
+  cfg.adminPass = currentPass;
+  writeConfig(cfg);
+  res.json({ ok: true, config: cfg });
+});
+
+app.post('/api/admin/dress', requireAuth, upload.single('image'), (req, res) => {
+  const cfg = readConfig();
+  const { title, price, description, imageUrl } = req.body;
+
+  let img = imageUrl || '';
+  if (req.file) img = `/uploads/${req.file.filename}`;
+
+  const newDress = {
+    id: Date.now(),
+    title: String(title),
+    price: Number(price),
+    image: img || 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=800&q=80',
+    description: description || ''
+  };
+
+  cfg.dresses = cfg.dresses || [];
+  cfg.dresses.unshift(newDress);
+  writeConfig(cfg);
+  res.json({ ok: true, dress: newDress });
+});
+
+app.delete('/api/admin/dress/:id', requireAuth, (req, res) => {
+  const id = Number(req.params.id);
+  const cfg = readConfig();
+  cfg.dresses = (cfg.dresses || []).filter(d => d.id !== id);
+  writeConfig(cfg);
+  res.json({ ok: true });
+});
+
+app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`الخادم يعمل بنجاح على الرابط: http://localhost:${PORT}`));
+'@
+
+# 2) server/package.json
+Write-File "$ROOT_DIR\server\package.json" @'
+{
+  "name": "loueys-design-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "helmet": "^6.0.0",
+    "multer": "^1.4.5-lts.1"
+  }
+}
+'@
+
+if (Test-Path $ZIP_NAME) { Remove-Item -Force $ZIP_NAME }
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::CreateFromDirectory($ROOT_DIR, $ZIP_NAME)
+
+Write-Host "تم إنشاء حزمة المشروع المحدثة بكلمة السر admin1234 بنجاح!" -ForegroundColor Green
+```
+
+### 📋 طريقة حفظ الملف وتشغيله على جهازك:
+
+1. **إنشاء الملف:**
+   - قم بنسخ الكود أعلاه وررده في ملف نصي جديد، ثم قم بحفظه باسم **`build_release.ps1`**.
+   - أو يمكنك الضغط على زر النسخ/التنزيل الخاص بمربع الكود المرفق أعلاه.
+
+2. **تشغيل السكربت عبر PowerShell:**
+   - افتح نافذة **PowerShell** في المجلد الذي يتواجد به الملف.
+   - اكتب الأمر التالي للسماح بتشغيل السكربتات للحلسة الحالية:
+     ```powershell
+     Set-ExecutionPolicy Bypass -Scope Process -Force
+     ```
+   - ثم شغل السكربت بالأمر:
+     ```powershell
+     .\build_release.ps1
+     
